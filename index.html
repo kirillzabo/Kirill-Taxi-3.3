@@ -1,0 +1,2187 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Такси — учёт</title>
+
+<style>
+:root{
+  --bg:#f4f5f7;
+  --card:#fff;
+  --text:#17181a;
+  --muted:#777;
+  --border:#e1e3e6;
+  --input:#fff;
+  --soft:#f6f6f7;
+  --nav:#fff;
+  --danger:#b42318;
+  --positive:#16803c;
+  --negative:#c62828;
+}
+
+body.dark{
+  --bg:#111315;
+  --card:#1b1e21;
+  --text:#f4f5f7;
+  --muted:#9ca1a7;
+  --border:#34383d;
+  --input:#24282c;
+  --soft:#24282c;
+  --nav:#191c1f;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  transition:.2s;
+}
+
+.app{
+  max-width:560px;
+  margin:auto;
+  padding-bottom:90px;
+}
+
+header{
+  padding:18px 15px 10px;
+  position:sticky;
+  top:0;
+  background:var(--bg);
+  z-index:3;
+}
+
+h1{margin:0;font-size:25px}
+h2{font-size:17px;margin:0 0 12px}
+h3{font-size:14px;margin:0 0 10px}
+
+.sub,.small,.meta{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.screen{
+  display:none;
+  padding:8px 14px;
+}
+
+.screen.active{display:block}
+
+.card{
+  background:var(--card);
+  border-radius:17px;
+  padding:15px;
+  margin-bottom:12px;
+  box-shadow:0 1px 4px #0001;
+}
+
+.grid,.summary{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+label{
+  font-size:12px;
+  color:var(--muted);
+}
+
+input,select{
+  width:100%;
+  padding:11px;
+  border:1px solid var(--border);
+  border-radius:11px;
+  font-size:16px;
+  margin-top:5px;
+  background:var(--input);
+  color:var(--text);
+}
+
+.metric{
+  background:var(--soft);
+  border-radius:12px;
+  padding:10px;
+}
+
+.metric .v{
+  font-size:19px;
+  font-weight:750;
+}
+
+.metric .l{
+  font-size:11px;
+  color:var(--muted);
+}
+
+.primary{
+  width:100%;
+  border:0;
+  border-radius:12px;
+  background:#111827;
+  color:white;
+  padding:13px;
+  font-weight:700;
+  font-size:16px;
+}
+
+body.dark .primary{
+  background:#f1f3f5;
+  color:#111;
+}
+
+.secondary{
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--text);
+  border-radius:10px;
+  padding:9px;
+}
+
+.danger{color:var(--danger)}
+
+.row{
+  display:flex;
+  gap:8px;
+}
+
+.row>*{flex:1}
+
+.check{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin-top:10px;
+}
+
+.check input{
+  width:20px;
+  margin:0;
+}
+
+.notice{
+  background:#eef3ff;
+  border-radius:11px;
+  padding:10px;
+  font-size:12px;
+  color:#39445c;
+  margin-top:10px;
+}
+
+body.dark .notice{
+  background:#202938;
+  color:#cbd5e1;
+}
+
+.tabs{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:var(--nav);
+  border-top:1px solid var(--border);
+  display:flex;
+  justify-content:center;
+  z-index:9;
+  padding:6px 0 calc(6px + env(safe-area-inset-bottom));
+}
+
+.tabs button{
+  border:0;
+  background:none;
+  color:var(--muted);
+  padding:5px 17px;
+  font-size:11px;
+}
+
+.tabs button.active{
+  color:var(--text);
+  font-weight:700;
+}
+
+.ico{
+  font-size:19px;
+  display:block;
+}
+
+.segment{
+  display:flex;
+  background:var(--soft);
+  border-radius:12px;
+  padding:3px;
+  margin-bottom:12px;
+}
+
+.segment button{
+  flex:1;
+  border:0;
+  background:none;
+  color:var(--muted);
+  border-radius:9px;
+  padding:10px;
+  font-weight:650;
+}
+
+.segment button.active{
+  background:var(--card);
+  color:var(--text);
+  box-shadow:0 1px 3px #0002;
+}
+
+.periodnav{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.periodnav button{
+  width:44px;
+  height:40px;
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--text);
+  border-radius:11px;
+  font-size:20px;
+}
+
+.periodnav .current{
+  flex:1;
+  text-align:center;
+  font-weight:750;
+  font-size:15px;
+}
+
+.period{
+  background:var(--card);
+  border-radius:15px;
+  padding:14px;
+  margin-bottom:10px;
+  border:1px solid var(--border);
+}
+
+.pt{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  font-weight:700;
+}
+
+.meta{
+  line-height:1.6;
+  margin-top:7px;
+}
+
+.actions{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+}
+
+.actions button{
+  flex:1;
+}
+
+.empty{
+  text-align:center;
+  color:var(--muted);
+  padding:25px;
+}
+
+.chartbox{
+  background:var(--card);
+  border-radius:15px;
+  padding:12px;
+  margin-bottom:12px;
+  border:1px solid var(--border);
+  overflow-x:auto;
+}
+
+.chart-scroll{
+  overflow-x:auto;
+  overflow-y:hidden;
+  width:100%;
+}
+
+.chart{
+  height:230px;
+  display:block;
+}
+
+.bar-positive{
+  fill:var(--positive);
+}
+
+.bar-negative{
+  fill:var(--negative);
+}
+
+.setting{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:11px 0;
+  border-bottom:1px solid var(--border);
+}
+
+.setting input,
+.setting select{
+  width:140px;
+  margin:0;
+}
+
+.theme-buttons{
+  display:flex;
+  gap:6px;
+  width:150px;
+}
+
+.theme-buttons button{
+  flex:1;
+  border:1px solid var(--border);
+  background:var(--soft);
+  color:var(--text);
+  border-radius:9px;
+  padding:8px 4px;
+  font-size:11px;
+}
+
+.theme-buttons button.active{
+  background:var(--text);
+  color:var(--card);
+}
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:#0008;
+  z-index:30;
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+}
+
+.modal.show{
+  display:flex;
+}
+
+.modal-content{
+  width:100%;
+  max-width:560px;
+  background:var(--card);
+  color:var(--text);
+  border-radius:20px 20px 0 0;
+  padding:18px;
+  padding-bottom:calc(20px + env(safe-area-inset-bottom));
+  max-height:85vh;
+  overflow:auto;
+}
+
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
+}
+
+.modal-close{
+  width:36px;
+  height:36px;
+  border:0;
+  border-radius:50%;
+  background:var(--soft);
+  color:var(--text);
+  font-size:20px;
+}
+
+.average-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.average-item{
+  background:var(--soft);
+  padding:13px;
+  border-radius:13px;
+}
+
+.average-item .value{
+  font-size:20px;
+  font-weight:750;
+}
+
+.average-item .name{
+  color:var(--muted);
+  font-size:11px;
+  margin-top:3px;
+}
+
+.avg-button{
+  width:100%;
+  margin-bottom:12px;
+}
+
+.day-status{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.net-positive{color:var(--positive)}
+.net-negative{color:var(--negative)}
+
+@media(max-width:400px){
+  .tabs button{padding:5px 12px}
+  .setting{font-size:13px}
+  .theme-buttons{width:135px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+  <h1>Такси — учёт</h1>
+  <div class="sub">Данные хранятся только на этом устройстве</div>
+</header>
+
+<!-- ================= ДЕНЬ ================= -->
+
+<section id="home" class="screen active">
+
+<div class="card">
+<h2>Новый день</h2>
+
+<div class="grid">
+
+<div>
+<label>Дата</label>
+<input id="date" type="date">
+</div>
+
+<div>
+<label>Одометр, км</label>
+<input id="odo" type="number" step="0.1">
+</div>
+
+<div>
+<div class="small">Км за день</div>
+<b id="km">0 км</b>
+</div>
+
+<div>
+<div class="small">Предыдущий одометр</div>
+<b id="prev">—</b>
+</div>
+
+</div>
+</div>
+
+<div class="card">
+<h2>Заработок</h2>
+
+<div class="grid">
+
+<div>
+<label>Uklon</label>
+<input id="uklon" type="number" step="0.01" value="0">
+</div>
+
+<div>
+<label>OnTaxi</label>
+<input id="ontaxi" type="number" step="0.01" value="0">
+</div>
+
+<div>
+<label>Левак</label>
+<input id="levak" type="number" step="0.01" value="0">
+</div>
+
+<div>
+<label>Доп. Расходы</label>
+<input id="extra" type="number" step="0.01" value="0">
+</div>
+
+</div>
+</div>
+
+<div class="card">
+
+<h2>Расходы</h2>
+
+<div class="summary">
+
+<div class="metric">
+<div class="v" id="rentV">1200</div>
+<div class="l">Аренда</div>
+</div>
+
+<div class="metric">
+<div class="v" id="chargeV">200</div>
+<div class="l">Зарядка</div>
+</div>
+
+<div class="metric">
+<div class="v" id="washV">0</div>
+<div class="l">Мойка машины</div>
+</div>
+
+<div class="metric">
+<div class="v" id="expV">1400</div>
+<div class="l">Всего</div>
+</div>
+
+</div>
+
+<label class="check">
+<input id="wash" type="checkbox">
+Мойка машины
+</label>
+
+</div>
+
+<div class="card">
+
+<div class="summary">
+
+<div class="metric">
+<div class="v" id="incV">0</div>
+<div class="l">Заработано</div>
+</div>
+
+<div class="metric">
+<div class="v" id="netV">-1400</div>
+<div class="l">После расходов</div>
+</div>
+
+</div>
+
+</div>
+
+<button class="primary" id="save">
+Сохранить день
+</button>
+
+<div class="notice">
+Км = текущий одометр − предыдущий известный одометр.
+Каждый календарный день учитывается в статистике, даже если заработок равен 0.
+</div>
+
+</section>
+
+<!-- ================= СТАТИСТИКА ================= -->
+
+<section id="stats" class="screen">
+
+<div class="segment">
+
+<button data-m="day" class="active">
+День
+</button>
+
+<button data-m="week">
+Неделя
+</button>
+
+<button data-m="month">
+Месяц
+</button>
+
+</div>
+
+<div class="periodnav">
+
+<button id="prevPeriod">‹</button>
+
+<div class="current" id="periodLabel">
+Сегодня
+</div>
+
+<button id="nextPeriod">›</button>
+
+</div>
+
+<div class="card">
+
+<h2 id="stitle">
+За выбранный день
+</h2>
+
+<div class="summary">
+
+<div class="metric">
+<div class="v" id="tin">0</div>
+<div class="l">Заработано</div>
+</div>
+
+<div class="metric">
+<div class="v" id="tex">0</div>
+<div class="l">Расходы</div>
+</div>
+
+<div class="metric">
+<div class="v" id="tnet">0</div>
+<div class="l">Итого</div>
+</div>
+
+<div class="metric">
+<div class="v" id="tkm">0</div>
+<div class="l">Км</div>
+</div>
+
+</div>
+
+</div>
+
+<div id="averageButtonBox"></div>
+
+<div id="chartBox" class="chartbox" style="display:none">
+
+<h3>
+Результат по дням
+</h3>
+
+<div class="chart-scroll">
+<div id="chart"></div>
+</div>
+
+</div>
+
+<div id="list"></div>
+
+</section>
+
+<!-- ================= НАСТРОЙКИ ================= -->
+
+<section id="settings" class="screen">
+
+<div class="card">
+
+<h2>Настройки</h2>
+
+<div class="setting">
+
+<span>Стартовый одометр</span>
+
+<input id="sodo" type="number" step="0.1">
+
+</div>
+
+<div class="setting">
+
+<span>Аренда/день</span>
+
+<input id="srent" type="number" step="0.01">
+
+</div>
+
+<div class="setting">
+
+<span>Зарядка/день</span>
+
+<input id="scharge" type="number" step="0.01">
+
+</div>
+
+<div class="setting">
+
+<span>Мойка машины</span>
+
+<input id="swash" type="number" step="0.01">
+
+</div>
+
+<div class="setting">
+
+<span>Тема</span>
+
+<div class="theme-buttons">
+
+<button data-theme="light">
+☀️
+</button>
+
+<button data-theme="dark">
+🌙
+</button>
+
+<button data-theme="system">
+⚙️
+</button>
+
+</div>
+
+</div>
+
+<button
+class="primary"
+id="saves"
+style="margin-top:14px">
+Сохранить настройки
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>Данные</h2>
+
+<div class="row">
+
+<button class="secondary" id="csv">
+Экспорт CSV
+</button>
+
+<button class="secondary" id="json">
+Резервная копия
+</button>
+
+</div>
+
+<button
+class="secondary danger"
+id="clear"
+style="width:100%;margin-top:8px">
+
+Удалить все дни
+
+</button>
+
+</div>
+
+</section>
+
+<!-- ================= НИЖНЕЕ МЕНЮ ================= -->
+
+<div class="tabs">
+
+<button data-s="home" class="active">
+<span class="ico">➕</span>
+День
+</button>
+
+<button data-s="stats">
+<span class="ico">📊</span>
+Статистика
+</button>
+
+<button data-s="settings">
+<span class="ico">⚙️</span>
+Настройки
+</button>
+
+</div>
+
+</div>
+
+<!-- ================= ОКНО СРЕДНИХ ================= -->
+
+<div id="averageModal" class="modal">
+
+<div class="modal-content">
+
+<div class="modal-header">
+
+<h2 id="averageTitle">
+Средние показатели
+</h2>
+
+<button
+class="modal-close"
+id="averageClose">
+×
+</button>
+
+</div>
+
+<div class="average-grid">
+
+<div class="average-item">
+<div class="value" id="avgIncome">0</div>
+<div class="name">Средний заработок</div>
+</div>
+
+<div class="average-item">
+<div class="value" id="avgExpense">0</div>
+<div class="name">Средние расходы</div>
+</div>
+
+<div class="average-item">
+<div class="value" id="avgNet">0</div>
+<div class="name">Средний итог</div>
+</div>
+
+<div class="average-item">
+<div class="value" id="avgKm">0</div>
+<div class="name">Средний пробег</div>
+</div>
+
+<div class="average-item">
+<div class="value" id="avgPerKm">0</div>
+<div class="name">Итого на 1 км</div>
+</div>
+
+<div class="average-item">
+<div class="value" id="avgDays">0</div>
+<div class="name">Дней в периоде</div>
+</div>
+
+</div>
+
+<div class="notice">
+В среднем учитываются все календарные дни периода, включая дни с заработком 0 и расходами на аренду и зарядку.
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const K='taxi_tracker_v5';
+
+let D=JSON.parse(localStorage.getItem(K)||'null')||{
+
+settings:{
+startOdo:67721,
+rent:1200,
+charge:200,
+wash:200,
+theme:'system'
+},
+
+days:[],
+mode:'day',
+cursor:new Date().toISOString().slice(0,10)
+
+};
+
+D.settings??={};
+D.settings.startOdo??=67721;
+D.settings.rent??=1200;
+D.settings.charge??=200;
+D.settings.wash??=200;
+D.settings.theme??='system';
+
+D.days??=[];
+D.mode??='day';
+D.cursor??=new Date().toISOString().slice(0,10);
+
+const $=x=>document.getElementById(x);
+
+const N=x=>Number($(x).value)||0;
+
+const M=x=>
+(Number(x)||0).toLocaleString(
+'ru-RU',
+{maximumFractionDigits:2}
+);
+
+function saveD(){
+localStorage.setItem(K,JSON.stringify(D));
+}
+
+function dateObj(s){
+return new Date(s+'T12:00:00');
+}
+
+function dateStr(d){
+return d.toISOString().slice(0,10);
+}
+
+function shiftDate(s,n){
+
+let d=dateObj(s);
+
+d.setDate(d.getDate()+n);
+
+return dateStr(d);
+
+}
+
+function shiftMonth(s,n){
+
+let d=new Date(s+'-01T12:00:00');
+
+d.setMonth(d.getMonth()+n);
+
+return d.toISOString().slice(0,7);
+
+}
+
+function monday(s){
+
+let d=dateObj(s);
+
+let n=d.getDay()||7;
+
+d.setDate(d.getDate()-n+1);
+
+return dateStr(d);
+
+}
+
+function daysInMonth(s){
+
+let d=new Date(s+'-01T12:00:00');
+
+d.setMonth(d.getMonth()+1);
+
+d.setDate(0);
+
+return d.getDate();
+
+}
+
+function friday(s){
+
+return dateObj(s).getDay()===5;
+
+}
+
+function sortDays(){
+
+D.days.sort(
+(a,b)=>a.date.localeCompare(b.date)
+);
+
+}
+
+function getDayData(date){
+
+return D.days.find(d=>d.date===date);
+
+}
+
+function previousOdo(date){
+
+sortDays();
+
+let previous=Number(D.settings.startOdo)||0;
+
+for(const d of D.days){
+
+if(d.date>=date)break;
+
+if(Number(d.odo)){
+previous=Number(d.odo);
+}
+
+}
+
+return previous;
+
+}
+
+function recalc(){
+
+sortDays();
+
+let previous=Number(D.settings.startOdo)||0;
+
+D.days.forEach(d=>{
+
+let odo=Number(d.odo)||0;
+
+d.km=odo?
+Math.max(
+0,
+Math.round((odo-previous)*10)/10
+)
+:0;
+
+if(odo){
+previous=odo;
+}
+
+d.expense=
+Number(D.settings.rent||0)+
+Number(D.settings.charge||0)+
+(d.wash?
+Number(D.settings.wash||0)
+:0)+
+Number(d.extra||0);
+
+});
+
+saveD();
+
+}
+
+function income(d){
+
+return Number(d.uklon||0)+
+Number(d.ontaxi||0)+
+Number(d.levak||0);
+
+}
+
+function net(d){
+
+return income(d)-Number(d.expense||0);
+
+}
+
+function totals(days){
+
+let incomeTotal=0;
+let expenseTotal=0;
+let kmTotal=0;
+
+days.forEach(d=>{
+
+incomeTotal+=income(d);
+expenseTotal+=Number(d.expense||0);
+kmTotal+=Number(d.km||0);
+
+});
+
+return {
+income:incomeTotal,
+expense:expenseTotal,
+km:kmTotal,
+net:incomeTotal-expenseTotal
+};
+
+}
+
+function getCalendarDates(){
+
+let result=[];
+
+if(D.mode==='day'){
+
+result.push(D.cursor);
+
+}
+
+else if(D.mode==='week'){
+
+let start=monday(D.cursor);
+
+for(let i=0;i<7;i++){
+
+result.push(
+shiftDate(start,i)
+);
+
+}
+
+}
+
+else{
+
+let month=D.cursor.slice(0,7);
+
+let count=daysInMonth(month);
+
+for(let i=1;i<=count;i++){
+
+result.push(
+month+'-'+String(i).padStart(2,'0')
+);
+
+}
+
+}
+
+return result;
+
+}
+
+function selectedDays(){
+
+return getCalendarDates().map(date=>{
+
+let existing=getDayData(date);
+
+if(existing)return existing;
+
+return {
+date,
+odo:0,
+km:0,
+uklon:0,
+ontaxi:0,
+levak:0,
+extra:0,
+expense:
+Number(D.settings.rent||0)+
+Number(D.settings.charge||0)+
+(friday(date)?
+Number(D.settings.wash||0)
+:0),
+wash:friday(date)
+};
+
+});
+
+}
+
+function periodInfo(){
+
+if(D.mode==='day'){
+
+return {
+label:dateObj(D.cursor).toLocaleDateString(
+'ru-RU',
+{
+weekday:'long',
+day:'2-digit',
+month:'long',
+year:'numeric'
+}
+)
+};
+
+}
+
+if(D.mode==='week'){
+
+let start=monday(D.cursor);
+let end=shiftDate(start,6);
+
+return {
+label:
+'Неделя: '+
+dateObj(start).toLocaleDateString(
+'ru-RU',
+{day:'2-digit',month:'2-digit'}
+)+
+' — '+
+dateObj(end).toLocaleDateString(
+'ru-RU',
+{day:'2-digit',month:'2-digit',year:'numeric'}
+)
+};
+
+}
+
+return {
+label:
+dateObj(D.cursor.slice(0,7)+'-01')
+.toLocaleDateString(
+'ru-RU',
+{
+month:'long',
+year:'numeric'
+}
+)
+};
+
+}
+
+function load(date){
+
+$('date').value=date;
+
+let d=getDayData(date);
+
+$('odo').value=d?.odo||'';
+$('uklon').value=d?.uklon||0;
+$('ontaxi').value=d?.ontaxi||0;
+$('levak').value=d?.levak||0;
+$('extra').value=d?.extra||0;
+
+$('wash').checked=
+d?
+!!d.wash
+:friday(date);
+
+preview();
+
+}
+
+function preview(){
+
+let p=previousOdo($('date').value);
+
+let odo=N('odo');
+
+let wash=$('wash').checked?
+Number(D.settings.wash||0):
+0;
+
+let extra=N('extra');
+
+let expense=
+Number(D.settings.rent||0)+
+Number(D.settings.charge||0)+
+wash+
+extra;
+
+let inc=
+N('uklon')+
+N('ontaxi')+
+N('levak');
+
+$('prev').textContent=M(p)+' км';
+
+$('km').textContent=
+(odo?
+Math.max(0,
+Math.round((odo-p)*10)/10)
+:0)+' км';
+
+$('rentV').textContent=
+M(D.settings.rent);
+
+$('chargeV').textContent=
+M(D.settings.charge);
+
+$('washV').textContent=
+M(wash);
+
+$('expV').textContent=
+M(expense);
+
+$('incV').textContent=
+M(inc);
+
+$('netV').textContent=
+M(inc-expense);
+
+}
+
+$('save').onclick=()=>{
+
+let date=$('date').value;
+let odo=N('odo');
+
+if(!date){
+alert('Укажи дату');
+return;
+}
+
+if(!odo){
+alert('Укажи одометр');
+return;
+}
+
+let previous=previousOdo(date);
+
+if(odo<previous){
+
+alert(
+'Одометр меньше предыдущего значения: '+
+M(previous)+' км'
+);
+
+return;
+
+}
+
+let d={
+date,
+odo,
+uklon:N('uklon'),
+ontaxi:N('ontaxi'),
+levak:N('levak'),
+extra:N('extra'),
+wash:$('wash').checked
+};
+
+let index=D.days.findIndex(
+x=>x.date===date
+);
+
+if(index<0){
+D.days.push(d);
+}else{
+D.days[index]=d;
+}
+
+recalc();
+
+load(date);
+render();
+
+alert('День сохранён');
+
+};
+
+function show(screen){
+
+document.querySelectorAll('.screen')
+.forEach(x=>{
+x.classList.toggle(
+'active',
+x.id===screen
+);
+});
+
+document.querySelectorAll('.tabs button')
+.forEach(x=>{
+x.classList.toggle(
+'active',
+x.dataset.s===screen
+);
+});
+
+if(screen==='stats'){
+render();
+}
+
+if(screen==='settings'){
+
+$('sodo').value=
+D.settings.startOdo;
+
+$('srent').value=
+D.settings.rent;
+
+$('scharge').value=
+D.settings.charge;
+
+$('swash').value=
+D.settings.wash;
+
+updateThemeButtons();
+
+}
+
+}
+
+document.querySelectorAll('.tabs button')
+.forEach(button=>{
+
+button.onclick=()=>{
+show(button.dataset.s);
+};
+
+});
+
+document.querySelectorAll('.segment button')
+.forEach(button=>{
+
+button.onclick=()=>{
+
+D.mode=button.dataset.m;
+
+if(D.mode==='month'){
+
+D.cursor=
+D.cursor.slice(0,7)+'-01';
+
+}
+
+saveD();
+render();
+
+};
+
+});
+
+$('prevPeriod').onclick=()=>{
+
+if(D.mode==='day'){
+
+D.cursor=shiftDate(D.cursor,-1);
+
+}
+
+else if(D.mode==='week'){
+
+D.cursor=shiftDate(
+monday(D.cursor),
+-7
+);
+
+}
+
+else{
+
+D.cursor=
+shiftMonth(
+D.cursor.slice(0,7),
+-1
+)+'-01';
+
+}
+
+saveD();
+render();
+
+};
+
+$('nextPeriod').onclick=()=>{
+
+if(D.mode==='day'){
+
+D.cursor=shiftDate(D.cursor,1);
+
+}
+
+else if(D.mode==='week'){
+
+D.cursor=shiftDate(
+monday(D.cursor),
+7
+);
+
+}
+
+else{
+
+D.cursor=
+shiftMonth(
+D.cursor.slice(0,7),
+1
+)+'-01';
+
+}
+
+saveD();
+render();
+
+};
+
+[
+'date',
+'odo',
+'uklon',
+'ontaxi',
+'levak',
+'extra',
+'wash'
+].forEach(id=>{
+
+$(id).addEventListener(
+'input',
+preview
+);
+
+});
+
+$('date').onchange=e=>{
+load(e.target.value);
+};
+
+$('saves').onclick=()=>{
+
+D.settings.startOdo=
+Number($('sodo').value)||
+D.settings.startOdo;
+
+D.settings.rent=
+Number($('srent').value)||0;
+
+D.settings.charge=
+Number($('scharge').value)||0;
+
+D.settings.wash=
+Number($('swash').value)||0;
+
+recalc();
+preview();
+render();
+
+alert('Настройки сохранены');
+
+};
+
+window.editDay=date=>{
+
+show('home');
+
+load(date);
+
+window.scrollTo({
+top:0,
+behavior:'smooth'
+});
+
+};
+
+window.deleteDay=date=>{
+
+if(confirm(
+'Удалить данные за '+
+dateObj(date).toLocaleDateString('ru-RU')+
+'?'
+)){
+
+D.days=D.days.filter(
+x=>x.date!==date
+);
+
+recalc();
+render();
+
+}
+
+};
+
+function renderChart(days){
+
+let chartBox=$('chartBox');
+
+if(D.mode==='day'){
+
+chartBox.style.display='none';
+return;
+
+}
+
+chartBox.style.display='block';
+
+let width=
+Math.max(
+520,
+days.length*30
+);
+
+let height=230;
+
+let left=38;
+let right=10;
+let top=20;
+let bottom=38;
+
+let chartWidth=
+width-left-right;
+
+let chartHeight=
+height-top-bottom;
+
+let values=days.map(d=>net(d));
+
+let max=
+Math.max(...values,0);
+
+let min=
+Math.min(...values,0);
+
+if(max===min){
+
+max+=1;
+min-=1;
+
+}
+
+let zeroY=
+top+
+(max/(max-min))*chartHeight;
+
+let slot=
+chartWidth/days.length;
+
+let barWidth=
+Math.max(
+7,
+Math.min(25,slot*.62)
+);
+
+function y(value){
+
+return top+
+((max-value)/(max-min))*chartHeight;
+
+}
+
+let svg='';
+
+svg+=`
+<line
+x1="${left}"
+y1="${zeroY}"
+x2="${width-right}"
+y2="${zeroY}"
+stroke="#888"
+stroke-width="1"
+stroke-dasharray="4 4"
+/>
+`;
+
+days.forEach((d,index)=>{
+
+let value=values[index];
+
+let x=
+left+
+index*slot+
+(slot-barWidth)/2;
+
+let y0=y(0);
+let yv=y(value);
+
+let topBar=Math.min(y0,yv);
+let barHeight=Math.max(
+2,
+Math.abs(y0-yv)
+);
+
+let cls=
+value>=0?
+'bar-positive':
+'bar-negative';
+
+let dateLabel=
+dateObj(d.date).getDate();
+
+let showLabel=
+D.mode==='week'||
+days.length<=10||
+index%Math.ceil(days.length/10)===0||
+index===days.length-1;
+
+svg+=`
+
+<rect
+class="${cls}"
+x="${x}"
+y="${topBar}"
+width="${barWidth}"
+height="${barHeight}"
+rx="3">
+
+<title>
+${dateObj(d.date).toLocaleDateString('ru-RU',{
+day:'2-digit',
+month:'2-digit'
+})}
+: ${M(value)}
+</title>
+
+</rect>
+`;
+
+if(showLabel){
+
+svg+=`
+
+<text
+x="${x+barWidth/2}"
+y="${height-13}"
+text-anchor="middle"
+font-size="9"
+fill="currentColor">
+
+${dateLabel}
+
+</text>
+`;
+
+}
+
+});
+
+$('chart').innerHTML=`
+
+<svg
+class="chart"
+width="${width}"
+height="${height}"
+viewBox="0 0 ${width} ${height}"
+preserveAspectRatio="none">
+
+${svg}
+
+<text
+x="4"
+y="${top+7}"
+font-size="9"
+fill="currentColor">
+
+${M(max)}
+
+</text>
+
+<text
+x="4"
+y="${height-bottom}"
+font-size="9"
+fill="currentColor">
+
+${M(min)}
+
+</text>
+
+</svg>
+`;
+
+}
+
+function renderDayList(days){
+
+let html='';
+
+days.forEach(d=>{
+
+let exists=!!getDayData(d.date);
+
+let n=net(d);
+
+let netClass=
+n>=0?'net-positive':'net-negative';
+
+html+=`
+
+<div class="period">
+
+<div class="pt">
+
+<span>
+
+${dateObj(d.date).toLocaleDateString(
+'ru-RU',
+{
+weekday:'long',
+day:'2-digit',
+month:'long'
+}
+)}
+
+</span>
+
+<span class="${netClass}">
+
+${M(n)}
+
+</span>
+
+</div>
+
+${
+exists
+?
+`
+
+<div class="meta">
+
+Uklon:
+<b>${M(d.uklon)}</b>
+·
+OnTaxi:
+<b>${M(d.ontaxi)}</b>
+·
+Левак:
+<b>${M(d.levak)}</b>
+
+<br>
+
+Доп. Расходы:
+<b>${M(d.extra)}</b>
+·
+Расходы:
+<b>${M(d.expense)}</b>
+
+<br>
+
+Одометр:
+<b>${M(d.odo)}</b>
+·
+Км:
+<b>${M(d.km)}</b>
+
+</div>
+
+<div class="actions">
+
+<button
+class="secondary"
+onclick="editDay('${d.date}')">
+Открыть
+</button>
+
+<button
+class="secondary danger"
+onclick="deleteDay('${d.date}')">
+Удалить
+</button>
+
+</div>
+
+`
+:
+`
+
+<div class="day-status">
+Данных за этот день нет.
+Расходы учитываются автоматически:
+${M(d.expense)}
+</div>
+
+`
+
+}
+
+</div>
+
+`;
+
+});
+
+$('list').innerHTML=html;
+
+}
+
+function renderAverageButton(){
+
+let box=$('averageButtonBox');
+
+if(D.mode==='day'){
+
+box.innerHTML='';
+return;
+
+}
+
+box.innerHTML=`
+
+<button
+class="secondary avg-button"
+id="openAverage">
+
+📊 Средние показатели
+
+</button>
+
+`;
+
+$('openAverage').onclick=
+openAverage;
+
+}
+
+function openAverage(){
+
+let days=selectedDays();
+
+let t=totals(days);
+
+let count=days.length;
+
+let avgIncome=
+count?t.income/count:0;
+
+let avgExpense=
+count?t.expense/count:0;
+
+let avgNet=
+count?t.net/count:0;
+
+let avgKm=
+count?t.km/count:0;
+
+let perKm=
+t.km?t.net/t.km:0;
+
+$('averageTitle').textContent=
+D.mode==='week'?
+'Средние показатели недели':
+'Средние показатели месяца';
+
+$('avgIncome').textContent=
+M(avgIncome);
+
+$('avgExpense').textContent=
+M(avgExpense);
+
+$('avgNet').textContent=
+M(avgNet);
+
+$('avgKm').textContent=
+M(avgKm);
+
+$('avgPerKm').textContent=
+M(perKm);
+
+$('avgDays').textContent=
+count;
+
+$('averageModal').classList.add('show');
+
+}
+
+$('averageClose').onclick=()=>{
+$('averageModal').classList.remove('show');
+};
+
+$('averageModal').onclick=e=>{
+
+if(e.target.id==='averageModal'){
+$('averageModal').classList.remove('show');
+}
+
+};
+
+function render(){
+
+recalc();
+
+let days=selectedDays();
+
+let totalsData=totals(days);
+
+let info=periodInfo();
+
+$('periodLabel').textContent=
+info.label;
+
+$('tin').textContent=
+M(totalsData.income);
+
+$('tex').textContent=
+M(totalsData.expense);
+
+$('tnet').textContent=
+M(totalsData.net);
+
+$('tkm').textContent=
+M(totalsData.km);
+
+$('stitle').textContent=
+D.mode==='day'?
+'За выбранный день':
+D.mode==='week'?
+'За выбранную неделю':
+'За выбранный месяц';
+
+document.querySelectorAll(
+'.segment button'
+).forEach(button=>{
+
+button.classList.toggle(
+'active',
+button.dataset.m===D.mode
+);
+
+});
+
+renderAverageButton();
+
+renderChart(days);
+
+renderDayList(days);
+
+}
+
+function applyTheme(){
+
+let theme=D.settings.theme||'system';
+
+if(theme==='dark'){
+
+document.body.classList.add('dark');
+
+}
+
+else if(theme==='light'){
+
+document.body.classList.remove('dark');
+
+}
+
+else{
+
+let dark=
+window.matchMedia &&
+window.matchMedia(
+'(prefers-color-scheme: dark)'
+).matches;
+
+document.body.classList.toggle(
+'dark',
+dark
+);
+
+}
+
+updateThemeButtons();
+
+}
+
+function updateThemeButtons(){
+
+document.querySelectorAll(
+'.theme-buttons button'
+).forEach(button=>{
+
+button.classList.toggle(
+'active',
+button.dataset.theme===
+D.settings.theme
+);
+
+});
+
+}
+
+document.querySelectorAll(
+'.theme-buttons button'
+).forEach(button=>{
+
+button.onclick=()=>{
+
+D.settings.theme=
+button.dataset.theme;
+
+saveD();
+
+applyTheme();
+
+};
+
+});
+
+if(
+window.matchMedia
+){
+
+window.matchMedia(
+'(prefers-color-scheme: dark)'
+).addEventListener(
+'change',
+()=>{
+
+if(D.settings.theme==='system'){
+applyTheme();
+}
+
+});
+
+}
+
+function downloadFile(
+name,
+content,
+type
+){
+
+let a=document.createElement('a');
+
+a.href=
+URL.createObjectURL(
+new Blob(
+[content],
+{type}
+)
+);
+
+a.download=name;
+
+a.click();
+
+setTimeout(
+()=>URL.revokeObjectURL(a.href),
+1000
+);
+
+}
+
+$('json').onclick=()=>{
+
+downloadFile(
+'taxi_backup.json',
+JSON.stringify(D,null,2),
+'application/json'
+);
+
+};
+
+$('csv').onclick=()=>{
+
+recalc();
+
+let rows=[
+
+[
+'Дата',
+'Uklon',
+'OnTaxi',
+'Левак',
+'Одометр',
+'Км за день',
+'Аренда',
+'Зарядка',
+'Мойка машины',
+'Доп. Расходы',
+'Расходы',
+'Итого'
+]
+
+];
+
+let start=
+D.days.length?
+D.days:
+[];
+
+start.forEach(d=>{
+
+rows.push([
+
+d.date,
+d.uklon,
+d.ontaxi,
+d.levak,
+d.odo,
+d.km,
+D.settings.rent,
+D.settings.charge,
+d.wash?
+D.settings.wash:
+0,
+d.extra,
+d.expense,
+net(d)
+
+]);
+
+});
+
+let csv=
+'\ufeff'+
+rows.map(row=>
+row.map(value=>
+'"'+
+String(value)
+.replaceAll('"','""')+
+'"'
+).join(';')
+).join('\n');
+
+downloadFile(
+'taxi.csv',
+csv,
+'text/csv'
+);
+
+};
+
+$('clear').onclick=()=>{
+
+if(confirm(
+'Удалить все дни?'
+)){
+
+D.days=[];
+
+saveD();
+
+render();
+
+}
+
+};
+
+applyTheme();
+
+load(
+new Date().toISOString().slice(0,10)
+);
+
+render();
+
+</script>
+
+</body>
+</html>
